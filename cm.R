@@ -1,54 +1,44 @@
-knitr::opts_chunk$set(echo = TRUE, results = "asis")
-
-makeVector <- function(x = numeric()) {
-        m <- NULL
-        set <- function(y) {
-                x <<- y
-                m <<- NULL
-        }
-        get <- function() x
-        setmean <- function(mean) m <<- mean
-        getmean <- function() m
-        list(set = set, get = get,
-             setmean = setmean,
-             getmean = getmean)
-}
-
-
-cachemean <- function(x, ...) {
-        m <- x$getmean()
-        if(!is.null(m)) {
-                message("getting cached data")
-                return(m)
-        }
-        data <- x$get()
-        m <- mean(data, ...)
-        x$setmean(m)
-        m
-}
-
-makeCacheMatrix <- function(x = matrix()) {
-  inv <- NULL
-  set <- function(y){
-    x <<- y
-    inv <<- NULL
+## Creates a special matrix that can cache it's inverse
+## Returns the list of available methods
+makeCacheMatrix <- function(value = matrix()) {
+  inverse <- NULL
+  
+  set <- function(newValue) {
+    value <<- newValue
+    inverse <<- NULL
   }
-  get <- function() x
-  setInverse <- function(solveMatrix) inv <<- solveMatrix
-  getInverse <- function() inv
-  list(set = set, get = get, setInverse = setInverse, getInverse = getInverse)
+  
+  get <- function() {
+    value
+  }
+  
+  setInverse <- function(newInverse) {
+    inverse <<- newInverse
+  }
+  
+  getInverse <- function() {
+    inverse
+  }
+  
+  list(
+    set = set,
+    get = get,
+    setInverse = setInverse,
+    getInverse = getInverse
+  )
 }
 
-
-cacheSolve <- function(x, ...) {
-  ## Return a matrix that is the inverse of 'x'
-  inv <- x$getInverse()
-  if(!is.null(inv)){
+## Calculates the inverse of our special matrix.
+## If the inverse was calculated before it returns the cached value instead of
+## solving the matrix again.
+cacheSolve <- function(m, ...) {
+  inverse <- m$getInverse()
+  if(!is.null(inverse)) {
     message("getting cached data")
-    return(inv)
+    return(inverse)
   }
-  data <- x$get()
-  inv <- solve(data)
-  x$setInverse(inv)
-  inv      
+  matrixValue <- m$get()
+  inverse <- solve(matrixValue, ...)
+  m$setInverse(inverse)
+  inverse
 }
